@@ -1,8 +1,8 @@
 class Question {
   final String uuid;
   final String question;
-  final List<String> options;
-  final String answer;
+  late final List<String?>? options;
+  late final String? answer;
   final String type;
   final String themeName;
   final String themeColor;
@@ -11,8 +11,8 @@ class Question {
   Question({
     required this.uuid,
     required this.question,
-    required this.options,
-    required this.answer,
+    this.options,
+    this.answer,
     required this.type,
     required this.themeName,
     required this.themeColor,
