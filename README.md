@@ -1,4 +1,4 @@
-# autoformation_app
+# PAF App
 
 A new Flutter project.
 
