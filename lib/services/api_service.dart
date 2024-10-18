@@ -9,13 +9,16 @@ class ApiService {
   Future<List<Question>> fetchQuestions(String sUuid) async {
     print(sUuid);
     try {
-      final response = await http.get(Uri.parse(_baseUrlApi+'/' + sUuid));
+      print("QUERYING API: " + _baseUrlApi + '/' + sUuid);
+      final response = await http.get(Uri.parse(_baseUrlApi + '/' + sUuid));
 
       if (response.statusCode == 200) {
         List<dynamic> jsonData = jsonDecode(response.body);
         print(jsonData);
         jsonData.map((item) => print(item));
         return jsonData.map((item) => Question.fromJson(item)).toList();
+      } else if (response.statusCode == 404) {
+        throw Exception('Quiz non trouvé');
       } else {
         throw Exception('Erreur lors de la récupération des questions');
       }
