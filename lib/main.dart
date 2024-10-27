@@ -1,48 +1,43 @@
-import 'package:autoformation_app/pages/QuizScreen.dart';
-import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
+import 'package:autoformation_app/app_router.dart';
+import 'package:autoformation_app/pages/home_screen.dart';
+import 'package:autoformation_app/pages/quiz_screen.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-/*
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PAF App',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const QuizScreen(quizUuid: "0192971f-72d8-7478-80f1-5f74084c5833"),
-    );
-  }
+void main() async {
+  final AppRouter appRouter = AppRouter();
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Verrouille l'application en mode portrait
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  await Hive.initFlutter();
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    navigatorKey: navigatorKey,
+    onGenerateRoute: appRouter.generateRoute,
+    initialRoute: AppRouter.homeRoute,
+  ));
 }
-*/
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  _MyAppState createState() => _MyAppState();
+  MyAppState createState() => MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   late final AppLinks _appLinks;
   late bool uuidFound = false;
   late final Widget _quiz;
+  late final Widget _home = HomeScreen();
+  bool hasNavigatedToQuiz = false; // Drapeau de vérification
 
   @override
   void initState() {
@@ -53,38 +48,83 @@ class _MyAppState extends State<MyApp> {
 
   void _initDeepLinkListener() {
     _appLinks.uriLinkStream.listen((uri) {
-      print('Lien détecté : $uri');
+      if (kDebugMode) {
+        print('Lien détecté : $uri');
+      }
       _handleDeepLink(uri);
     }, onError: (err) {
-      print('Erreur lors de la gestion du lien: $err');
+      if (kDebugMode) {
+        print('Erreur lors de la gestion du lien: $err');
+      }
     });
   }
 
-  void _handleDeepLink(Uri uri) {
-    if (uri.scheme == 'paf' && uri.host == 'quiz') {
-      final quizUuid = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
-      if (quizUuid != null) {
-        print('GO to ' + quizUuid);
-        setState(() {
-          uuidFound = true;
-          _quiz = QuizScreen(quizUuid: quizUuid);
-        });
+  void _handleDeepLink(Uri? uri) {
+    if (uri != null && !hasNavigatedToQuiz) {
+      if (uri.scheme == 'paf' && uri.host == 'quiz') {
+        final quizUuid =
+            uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
+        if (quizUuid != null) {
+          if (kDebugMode) {
+            print('GO to $quizUuid');
+          }
+          setState(() {
+            uuidFound = true;
+            _quiz = QuizScreen(quizUuid: quizUuid);
+          });
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print('Lien non géré : $uri');
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Quiz App',
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Quiz App')),
-        body: uuidFound
-            ? _quiz
-            : const Center(
-                child: Text('Scanne un QR code pour commencer le quiz.'),
-              ),
-      ),
-    );
+    return !uuidFound ? _home :
+      MaterialApp(
+        title: 'Quiz App',
+        themeMode: ThemeMode.system,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          brightness: Brightness.light,
+          scaffoldBackgroundColor: Colors.white,
+          appBarTheme: AppBarTheme(
+            color: Colors.blue,
+            titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          textTheme: TextTheme(
+            bodyMedium: TextStyle(color: Colors.black),
+          ),
+        ),
+        darkTheme: ThemeData(
+          primarySwatch: Colors.blue,
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: Colors.black,
+          appBarTheme: AppBarTheme(
+            color: Colors.grey[900],
+            titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          textTheme: TextTheme(
+            bodyMedium: TextStyle(color: Colors.white),
+          ),
+        ),
+        home: Scaffold(
+          appBar: AppBar(title: const Text('Quiz App')),
+          body: uuidFound
+              ? _quiz
+              : Container(
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Start Quiz'),
+                    ],
+                  ),
+                ),
+        ),
+      );
   }
 }

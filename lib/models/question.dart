@@ -1,12 +1,12 @@
+import 'theme_data.dart';
+
 class Question {
   final String uuid;
   final String question;
-  late final List<String?>? options;
-  late final String? answer;
+  final List<String>? options;
+  final String? answer;
   final String type;
-  final String themeName;
-  final String themeColor;
-  final String themeIllustration;
+  final ThemeData? theme;
 
   Question({
     required this.uuid,
@@ -14,21 +14,21 @@ class Question {
     this.options,
     this.answer,
     required this.type,
-    required this.themeName,
-    required this.themeColor,
-    required this.themeIllustration,
+    this.theme,
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
     return Question(
-      uuid: json['uuid'],
-      question: json['question'],
-      options: List<String>.from(json['options']),
-      answer: json['answer'],
-      type: json['type'],
-      themeName: json['theme']['name'],
-      themeColor: json['theme']['color'],
-      themeIllustration: json['theme']['illustration'],
+      uuid: json['uuid'] as String,
+      question: json['question'] as String,
+      options: json['options'] != null && json['options'].isNotEmpty
+          ? List<String>.from(json['options'])
+          : null,
+      answer: json['answer'] as String?,
+      type: json['type'] as String,
+      theme: json['theme'] != null ? ThemeData.fromJson(json['theme']) : null,
     );
   }
 }
+
+
