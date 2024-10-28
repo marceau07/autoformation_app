@@ -1,4 +1,8 @@
 import 'package:autoformation_app/models/quiz.dart';
+import 'package:autoformation_app/pages/home_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/question.dart';
@@ -7,6 +11,9 @@ class ApiService {
   static const String baseUrl = 'https://dev.jem-formation.fr';
   static const String _baseUrlApi = '$baseUrl/fr/api/v1/quiz';
   static const String _baseUrlUpdateApi = '$baseUrl/fr/api/v1/send/quiz';
+  static const String _login_url = '$baseUrl/fr/api/v1/login';
+
+  final _storage = const FlutterSecureStorage();
 
   Future<String> fetchModuleTitle(String quizUuid) async {
     final response = await http.get(Uri.parse('$_baseUrlApi/$quizUuid'));
@@ -128,5 +135,95 @@ class ApiService {
     } catch (error) {
       print('Erreur : $error');
     }
+  }
+
+  Future<void> storeUser(dynamic user) async {
+    await _storage.write(key: 'userUuid', value: user['uuid']);
+    await _storage.write(key: 'username', value: user['username']);
+  }
+
+  Future<String> getUserUuid() async {
+    return (await _storage.read(key: 'userUuid')) ?? '';
+  }
+
+  Future<String> getUsername() async {
+    return (await _storage.read(key: 'username')) ?? '';
+  }
+  
+  void login(TextEditingController username, TextEditingController password, bool isChecked, Box<dynamic> box1, navigatorKey, context) async {
+    // Création des données du corps de la requête
+    Map<String, String> body = {
+      'username': username.text,
+      'password': password.text,
+    };
+
+    try {
+      // Envoi de la requête POST
+      final response = await http.post(
+        Uri.parse(_login_url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+
+      // Vérification de la réponse
+      if (response.statusCode == 200) {
+
+        // Décodage de la réponse JSON
+        var data = jsonDecode(response.body);
+
+        // Stockage de l'UUID de l'utilisateur
+        await storeUser(data);
+        print("UUID de l'utilisateur : ${data['uuid']}");
+        print("Username de l'utilisateur : ${data['username']}");
+        print("UUID de l'utilisateur stocké : ${await getUserUuid()}");
+        print("Username de l'utilisateur stocké : ${await getUsername()}");
+        // Vérification du succès de la connexion et stockage du token
+        if (data['success'] == true) {
+          // Si "Remember Me" est coché, sauvegarder username et token
+          if (isChecked) {
+            box1.put('username', username.text);
+            box1.put(
+                'token',
+                data[
+                    'token']); // Enregistre le token pour une session persistante
+          }
+          // Naviguer vers l'écran principal après la connexion réussie
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+        } else {
+          // Gestion des erreurs de connexion
+          _showErrorDialog("Erreur de connexion", data['message'], navigatorKey);
+        }
+      } else {
+        _showErrorDialog("Erreur", "Impossible de se connecter.", navigatorKey);
+      }
+    } catch (e) {
+      _showErrorDialog("Erreur", "Une erreur s'est produite : $e", navigatorKey);
+    }
+  }
+
+  // Fonction pour afficher un message d'erreur dans une boîte de dialogue
+  void _showErrorDialog(String title, String message, navigatorKey) {
+    navigatorKey.currentState?.context != null
+        ? showDialog(
+            context: navigatorKey.currentState!.context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(title),
+                content: Text(message),
+                actions: [
+                  TextButton(
+                    child: Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          )
+        : null;
   }
 }

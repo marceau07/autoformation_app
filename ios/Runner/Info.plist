@@ -47,6 +47,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>keychain-access-groups</key>
+	<array>
+	<string>$(AppIdentifierPrefix)$(CFBundleIdentifier)</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 	<dict>

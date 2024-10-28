@@ -30,10 +30,22 @@ class HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
-        title: const Text(
-          "EPAF l'APP",
-          style: TextStyle(fontSize: 24, color: Colors.white),
+        // Titre de l'application provenant de la méthode getUserUuid dans ApiService
+        title: FutureBuilder<String>(
+          future: ApiService().getUsername(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text('Chargement...', style: TextStyle(color: Colors.white));
+            } else if (snapshot.hasError) {
+              return const Text('Erreur', style: TextStyle(color: Colors.white));
+            } else if (snapshot.hasData) {
+              return Text('Bienvenue ${snapshot.data}', style: TextStyle(color: Colors.white));
+            } else {
+              return const Text('EPAF l\'APP', style: TextStyle(color: Colors.white));
+            }
+          },
         ),
+        
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
@@ -60,7 +72,7 @@ class HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 Text(
-                  'Bienvenue au Quiz App',
+                  'Bienvenue sur EPAF l\'APP',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -77,6 +89,35 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                     filled: true,
                     fillColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Titre de la section des catégories
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Catégories',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Action pour voir toutes les catégories
+                  },
+                  child: Text(
+                    'Voir tout',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blueAccent,
+                    ),
                   ),
                 ),
               ],

@@ -1,11 +1,8 @@
-import 'dart:convert';
-
 import 'package:autoformation_app/main.dart';
-import 'package:autoformation_app/pages/home_screen.dart';
+import 'package:autoformation_app/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -143,7 +140,7 @@ class LoginScreenState extends State<LoginScreen> {
                                           },
                                         ),
                                       );
-                                      login();
+                                      ApiService().login(username, password, isChecked, box1, navigatorKey, context);
                                     },
                                     icon: Icon(
                                       Icons.arrow_forward,
@@ -194,77 +191,5 @@ class LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  void login() async {
-    // URL de l'API pour la connexion
-    const String url = 'https://dev.jem-formation.fr/fr/api/v1/login';
-
-    // Création des données du corps de la requête
-    Map<String, String> body = {
-      'username': username.text,
-      'password': password.text,
-    };
-
-    try {
-      // Envoi de la requête POST
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
-      );
-
-      // Vérification de la réponse
-      if (response.statusCode == 200) {
-        // Décodage de la réponse JSON
-        var data = jsonDecode(response.body);
-        // Vérification du succès de la connexion et stockage du token
-        if (data['success'] == true) {
-          // Si "Remember Me" est coché, sauvegarder username et token
-          if (isChecked) {
-            box1.put('username', username.text);
-            box1.put(
-                'token',
-                data[
-                    'token']); // Enregistre le token pour une session persistante
-          }
-          // Naviguer vers l'écran principal après la connexion réussie
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomeScreen()),
-          );
-        } else {
-          // Gestion des erreurs de connexion
-          _showErrorDialog("Erreur de connexion", data['message']);
-        }
-      } else {
-        _showErrorDialog("Erreur", "Impossible de se connecter.");
-      }
-    } catch (e) {
-      _showErrorDialog("Erreur", "Une erreur s'est produite : $e");
-    }
-  }
-
-// Fonction pour afficher un message d'erreur dans une boîte de dialogue
-  void _showErrorDialog(String title, String message) {
-    navigatorKey.currentState?.context != null
-        ? showDialog(
-            context: navigatorKey.currentState!.context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text(title),
-                content: Text(message),
-                actions: [
-                  TextButton(
-                    child: Text("OK"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          )
-        : null;
   }
 }
