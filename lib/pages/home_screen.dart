@@ -25,13 +25,13 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-      resizeToAvoidBottomInset: true, 
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.black, // Couleur de fond
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
         title: const Text(
-          "Hello!",
+          "EPAF l'APP",
           style: TextStyle(fontSize: 24, color: Colors.white),
         ),
         actions: [
@@ -113,72 +113,72 @@ class HomeScreenState extends State<HomeScreen> {
         ],
       ),
       // Barre de navigation inférieure
-      bottomNavigationBar: Container(
-        margin: EdgeInsets.all(20),
-        height: size.width * .155,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(.15),
-              blurRadius: 30,
-              offset: Offset(0, 10),
-            ),
-          ],
-          borderRadius: BorderRadius.circular(50),
-        ),
-        child: ListView.builder(
-          itemCount: 4,
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: size.width * .024),
-          itemBuilder: (context, index) => InkWell(
-            onTap: () {
-              setState(
-                () {
-                  currentIndex = index;
-                },
-              );
-            },
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 1500),
-                  curve: Curves.fastLinearToSlowEaseIn,
-                  margin: EdgeInsets.only(
-                    bottom: index == currentIndex ? 0 : size.width * .029,
-                    right: size.width * .0422,
-                    left: size.width * .0422,
-                  ),
-                  width: size.width * .128,
-                  height: index == currentIndex ? size.width * .014 : 0,
-                  decoration: BoxDecoration(
-                    color: Colors.blueAccent,
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(10),
-                    ),
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () => Navigator.pushNamed(context, listOfRoutes[index]), label: Text(""), icon: Icon(
-                  listOfIcons[index],
-                  size: size.width * .076,
-                  color: index == currentIndex
-                      ? Colors.blueAccent
-                      : Colors.black38,
-                )
-                ),
-                SizedBox(height: size.width * .03),
-              ],
-            ),
-          ),
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   margin: EdgeInsets.all(20),
+      //   height: size.width * .155,
+      //   decoration: BoxDecoration(
+      //     color: Colors.white,
+      //     boxShadow: [
+      //       BoxShadow(
+      //         color: Colors.black.withOpacity(.15),
+      //         blurRadius: 30,
+      //         offset: Offset(0, 10),
+      //       ),
+      //     ],
+      //     borderRadius: BorderRadius.circular(50),
+      //   ),
+      //   child: ListView.builder(
+      //     itemCount: 4,
+      //     scrollDirection: Axis.horizontal,
+      //     padding: EdgeInsets.symmetric(horizontal: size.width * .024),
+      //     itemBuilder: (context, index) => InkWell(
+      //       onTap: () {
+      //         setState(
+      //           () {
+      //             currentIndex = index;
+      //           },
+      //         );
+      //       },
+      //       splashColor: Colors.transparent,
+      //       highlightColor: Colors.transparent,
+      //       child: Column(
+      //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //         children: [
+      //           AnimatedContainer(
+      //             duration: Duration(milliseconds: 1500),
+      //             curve: Curves.fastLinearToSlowEaseIn,
+      //             margin: EdgeInsets.only(
+      //               bottom: index == currentIndex ? 0 : size.width * .029,
+      //               right: size.width * .0422,
+      //               left: size.width * .0422,
+      //             ),
+      //             width: size.width * .128,
+      //             height: index == currentIndex ? size.width * .014 : 0,
+      //             decoration: BoxDecoration(
+      //               color: Colors.blueAccent,
+      //               borderRadius: BorderRadius.vertical(
+      //                 bottom: Radius.circular(10),
+      //               ),
+      //             ),
+      //           ),
+      //           TextButton.icon(
+      //             onPressed: () => Navigator.pushNamed(context, listOfRoutes[index]), label: Text(""), icon: Icon(
+      //             listOfIcons[index],
+      //             size: size.width * .076,
+      //             color: index == currentIndex
+      //                 ? Colors.blueAccent
+      //                 : Colors.black38,
+      //           )
+      //           ),
+      //           SizedBox(height: size.width * .03),
+      //         ],
+      //       ),
+      //     ),
+      //   ),
+      // ),
     );
   }
-  
+
   List<String> listOfRoutes = [
     AppRouter.homeRoute,
     AppRouter.loginRoute,
@@ -194,8 +194,8 @@ class HomeScreenState extends State<HomeScreen> {
   ];
 
   // Fonction pour construire une carte de catégorie
-  Widget _buildCategoryCard(
-      String title, String uuid, String illustration, IconData icon, BuildContext context) {
+  Widget _buildCategoryCard(String title, String uuid, String illustration,
+      IconData icon, BuildContext context) {
     return GestureDetector(
       onTap: () {
         print(uuid);
