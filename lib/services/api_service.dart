@@ -6,15 +6,27 @@ import '../models/question.dart';
 class ApiService {
   static const String baseUrl = 'https://dev.jem-formation.fr';
   static const String _baseUrlApi = '$baseUrl/fr/api/v1/quiz';
+  static const String _baseUrlUpdateApi = '$baseUrl/fr/api/v1/send/quiz';
+
+  Future<String> fetchModuleTitle(String quizUuid) async {
+    final response = await http.get(Uri.parse('$_baseUrlApi/$quizUuid'));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['title']; // Assure-toi que l'API renvoie un champ 'title'
+    } else {
+      throw Exception('Erreur lors de la récupération du titre du module');
+    }
+  }
 
   Future<List<Question>> fetchQuestions(String sUuid) async {
     print("UUID demandé: $sUuid");
     try {
-      final fullUrl = '$_baseUrlApi/$sUuid';
+      final fullUrl = '$_baseUrlApi/$sUuid/rows';
       print("Requête envoyée à l'API: $fullUrl");
-      
+
       final response = await http.get(Uri.parse(fullUrl));
-      
+
       if (response.statusCode == 200) {
         List<dynamic> jsonData = jsonDecode(response.body);
 
@@ -76,6 +88,45 @@ class ApiService {
       return jsonResponse.map((data) => Quiz.fromJson(data)).toList();
     } else {
       throw Exception('Erreur lors du chargement des quiz');
+    }
+  }
+
+  Future<void> sendResult(
+      String userUuid, String quizUuid, Map<int, String> questions) async {
+    final Map<String, String> questionsStringMap =
+        questions.map((key, value) => MapEntry(key.toString(), value));
+
+    // Préparation des données sous forme de JSON
+    final Map<String, dynamic> requestData = {
+      'userUuid': userUuid,
+      'quizUuid': quizUuid,
+      'questions': questionsStringMap,
+    };
+
+    print('Envoi des données: $requestData');
+
+    try {
+      // Envoi de la requête POST
+      final response = await http.post(
+        Uri.parse(_baseUrlUpdateApi),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(requestData),
+      );
+      print('Réponse: $response');
+
+      // Traitement de la réponse
+      if (response.statusCode == 200) {
+        // Si l'API retourne une réponse 200 (succès)
+        print('Mise à jour réussie : ${response.body}');
+      } else {
+        // Si l'API retourne une autre réponse, on peut afficher un message d'erreur
+        print('Échec de la mise à jour : ${response.statusCode}');
+        print('Message : ${response.body}');
+      }
+    } catch (error) {
+      print('Erreur : $error');
     }
   }
 }
